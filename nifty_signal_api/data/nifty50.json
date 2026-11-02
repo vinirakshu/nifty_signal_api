@@ -1,0 +1,357 @@
+{
+ "index": "NIFTY 50",
+ "weights_as_of": "2026-10-16",
+ "source": "Free-float weights from StockMojo (16 Oct 2026). Update monthly from the niftyindices.com factsheet.",
+ "stocks": [
+  {
+   "ticker": "HDFCBANK",
+   "symbol": "NSE:HDFCBANK-EQ",
+   "name": "HDFC Bank",
+   "weight": 10.54,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "ICICIBANK",
+   "symbol": "NSE:ICICIBANK-EQ",
+   "name": "ICICI Bank",
+   "weight": 8.81,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "RELIANCE",
+   "symbol": "NSE:RELIANCE-EQ",
+   "name": "Reliance Industries",
+   "weight": 7.52,
+   "sector": "Energy"
+  },
+  {
+   "ticker": "BHARTIARTL",
+   "symbol": "NSE:BHARTIARTL-EQ",
+   "name": "Bharti Airtel",
+   "weight": 5.12,
+   "sector": "Telecom"
+  },
+  {
+   "ticker": "LT",
+   "symbol": "NSE:LT-EQ",
+   "name": "Larsen & Toubro",
+   "weight": 4.17,
+   "sector": "Construction"
+  },
+  {
+   "ticker": "SBIN",
+   "symbol": "NSE:SBIN-EQ",
+   "name": "State Bank of India",
+   "weight": 3.79,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "INFY",
+   "symbol": "NSE:INFY-EQ",
+   "name": "Infosys",
+   "weight": 3.41,
+   "sector": "IT"
+  },
+  {
+   "ticker": "AXISBANK",
+   "symbol": "NSE:AXISBANK-EQ",
+   "name": "Axis Bank",
+   "weight": 3.32,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "KOTAKBANK",
+   "symbol": "NSE:KOTAKBANK-EQ",
+   "name": "Kotak Mahindra Bank",
+   "weight": 2.84,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "BAJFINANCE",
+   "symbol": "NSE:BAJFINANCE-EQ",
+   "name": "Bajaj Finance",
+   "weight": 2.53,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "M&M",
+   "symbol": "NSE:M&M-EQ",
+   "name": "Mahindra & Mahindra",
+   "weight": 2.51,
+   "sector": "Auto"
+  },
+  {
+   "ticker": "ITC",
+   "symbol": "NSE:ITC-EQ",
+   "name": "ITC",
+   "weight": 2.43,
+   "sector": "FMCG"
+  },
+  {
+   "ticker": "ETERNAL",
+   "symbol": "NSE:ETERNAL-EQ",
+   "name": "Eternal (Zomato)",
+   "weight": 2.26,
+   "sector": "Consumer Services"
+  },
+  {
+   "ticker": "TCS",
+   "symbol": "NSE:TCS-EQ",
+   "name": "Tata Consultancy Services",
+   "weight": 1.97,
+   "sector": "IT"
+  },
+  {
+   "ticker": "SUNPHARMA",
+   "symbol": "NSE:SUNPHARMA-EQ",
+   "name": "Sun Pharma",
+   "weight": 1.88,
+   "sector": "Pharma"
+  },
+  {
+   "ticker": "TITAN",
+   "symbol": "NSE:TITAN-EQ",
+   "name": "Titan",
+   "weight": 1.84,
+   "sector": "Consumer Durables"
+  },
+  {
+   "ticker": "HINDUNILVR",
+   "symbol": "NSE:HINDUNILVR-EQ",
+   "name": "Hindustan Unilever",
+   "weight": 1.57,
+   "sector": "FMCG"
+  },
+  {
+   "ticker": "TATASTEEL",
+   "symbol": "NSE:TATASTEEL-EQ",
+   "name": "Tata Steel",
+   "weight": 1.48,
+   "sector": "Metals"
+  },
+  {
+   "ticker": "MARUTI",
+   "symbol": "NSE:MARUTI-EQ",
+   "name": "Maruti Suzuki",
+   "weight": 1.47,
+   "sector": "Auto"
+  },
+  {
+   "ticker": "NTPC",
+   "symbol": "NSE:NTPC-EQ",
+   "name": "NTPC",
+   "weight": 1.46,
+   "sector": "Power"
+  },
+  {
+   "ticker": "ADANIPORTS",
+   "symbol": "NSE:ADANIPORTS-EQ",
+   "name": "Adani Ports",
+   "weight": 1.36,
+   "sector": "Services"
+  },
+  {
+   "ticker": "BEL",
+   "symbol": "NSE:BEL-EQ",
+   "name": "Bharat Electronics",
+   "weight": 1.32,
+   "sector": "Capital Goods"
+  },
+  {
+   "ticker": "HINDALCO",
+   "symbol": "NSE:HINDALCO-EQ",
+   "name": "Hindalco",
+   "weight": 1.32,
+   "sector": "Metals"
+  },
+  {
+   "ticker": "SHRIRAMFIN",
+   "symbol": "NSE:SHRIRAMFIN-EQ",
+   "name": "Shriram Finance",
+   "weight": 1.29,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "BSE",
+   "symbol": "NSE:BSE-EQ",
+   "name": "BSE Ltd",
+   "weight": 1.24,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "HCLTECH",
+   "symbol": "NSE:HCLTECH-EQ",
+   "name": "HCL Technologies",
+   "weight": 1.22,
+   "sector": "IT"
+  },
+  {
+   "ticker": "ULTRACEMCO",
+   "symbol": "NSE:ULTRACEMCO-EQ",
+   "name": "UltraTech Cement",
+   "weight": 1.22,
+   "sector": "Cement"
+  },
+  {
+   "ticker": "JSWSTEEL",
+   "symbol": "NSE:JSWSTEEL-EQ",
+   "name": "JSW Steel",
+   "weight": 1.17,
+   "sector": "Metals"
+  },
+  {
+   "ticker": "POWERGRID",
+   "symbol": "NSE:POWERGRID-EQ",
+   "name": "Power Grid",
+   "weight": 1.13,
+   "sector": "Power"
+  },
+  {
+   "ticker": "BAJAJ-AUTO",
+   "symbol": "NSE:BAJAJ-AUTO-EQ",
+   "name": "Bajaj Auto",
+   "weight": 1.12,
+   "sector": "Auto"
+  },
+  {
+   "ticker": "GRASIM",
+   "symbol": "NSE:GRASIM-EQ",
+   "name": "Grasim",
+   "weight": 1.11,
+   "sector": "Cement"
+  },
+  {
+   "ticker": "INDIGO",
+   "symbol": "NSE:INDIGO-EQ",
+   "name": "InterGlobe Aviation",
+   "weight": 1.05,
+   "sector": "Services"
+  },
+  {
+   "ticker": "ASIANPAINT",
+   "symbol": "NSE:ASIANPAINT-EQ",
+   "name": "Asian Paints",
+   "weight": 1.04,
+   "sector": "Consumer Durables"
+  },
+  {
+   "ticker": "COALINDIA",
+   "symbol": "NSE:COALINDIA-EQ",
+   "name": "Coal India",
+   "weight": 0.97,
+   "sector": "Energy"
+  },
+  {
+   "ticker": "BAJAJFINSV",
+   "symbol": "NSE:BAJAJFINSV-EQ",
+   "name": "Bajaj Finserv",
+   "weight": 0.96,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "ADANIENT",
+   "symbol": "NSE:ADANIENT-EQ",
+   "name": "Adani Enterprises",
+   "weight": 0.96,
+   "sector": "Metals & Mining"
+  },
+  {
+   "ticker": "EICHERMOT",
+   "symbol": "NSE:EICHERMOT-EQ",
+   "name": "Eicher Motors",
+   "weight": 0.94,
+   "sector": "Auto"
+  },
+  {
+   "ticker": "NESTLEIND",
+   "symbol": "NSE:NESTLEIND-EQ",
+   "name": "Nestle India",
+   "weight": 0.92,
+   "sector": "FMCG"
+  },
+  {
+   "ticker": "TECHM",
+   "symbol": "NSE:TECHM-EQ",
+   "name": "Tech Mahindra",
+   "weight": 0.91,
+   "sector": "IT"
+  },
+  {
+   "ticker": "ONGC",
+   "symbol": "NSE:ONGC-EQ",
+   "name": "ONGC",
+   "weight": 0.85,
+   "sector": "Energy"
+  },
+  {
+   "ticker": "APOLLOHOSP",
+   "symbol": "NSE:APOLLOHOSP-EQ",
+   "name": "Apollo Hospitals",
+   "weight": 0.85,
+   "sector": "Healthcare"
+  },
+  {
+   "ticker": "TRENT",
+   "symbol": "NSE:TRENT-EQ",
+   "name": "Trent",
+   "weight": 0.83,
+   "sector": "Retail"
+  },
+  {
+   "ticker": "SBILIFE",
+   "symbol": "NSE:SBILIFE-EQ",
+   "name": "SBI Life Insurance",
+   "weight": 0.74,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "CIPLA",
+   "symbol": "NSE:CIPLA-EQ",
+   "name": "Cipla",
+   "weight": 0.74,
+   "sector": "Pharma"
+  },
+  {
+   "ticker": "DRREDDY",
+   "symbol": "NSE:DRREDDY-EQ",
+   "name": "Dr. Reddy's",
+   "weight": 0.73,
+   "sector": "Pharma"
+  },
+  {
+   "ticker": "MAXHEALTH",
+   "symbol": "NSE:MAXHEALTH-EQ",
+   "name": "Max Healthcare",
+   "weight": 0.7,
+   "sector": "Healthcare"
+  },
+  {
+   "ticker": "JIOFIN",
+   "symbol": "NSE:JIOFIN-EQ",
+   "name": "Jio Financial Services",
+   "weight": 0.68,
+   "sector": "Financials"
+  },
+  {
+   "ticker": "TATACONSUM",
+   "symbol": "NSE:TATACONSUM-EQ",
+   "name": "Tata Consumer Products",
+   "weight": 0.6,
+   "sector": "FMCG"
+  },
+  {
+   "ticker": "TMPV",
+   "symbol": "NSE:TMPV-EQ",
+   "name": "Tata Motors Passenger Vehicles",
+   "weight": 0.56,
+   "sector": "Auto"
+  },
+  {
+   "ticker": "HDFCLIFE",
+   "symbol": "NSE:HDFCLIFE-EQ",
+   "name": "HDFC Life Insurance",
+   "weight": 0.54,
+   "sector": "Financials"
+  }
+ ]
+}

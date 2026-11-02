@@ -1,0 +1,222 @@
+{
+  "success": true,
+  "timestamp": "2026-10-20T16:45:01+05:30",
+  "underlying": {
+    "symbol": "NSE:NIFTY50-INDEX",
+    "ltp": 25163.46,
+    "change": 213.46,
+    "change_pct": 0.86,
+    "open": 25000.0,
+    "high": 25168.46,
+    "low": 24995.0,
+    "prev_close": 24950.0,
+    "india_vix": 12.4
+  },
+  "intraday": {
+    "day_high": 25168.46,
+    "day_low": 24995.0,
+    "opening_range_high": 25022.25,
+    "opening_range_low": 24995.0,
+    "avg_price": 25083.32,
+    "avg_price_type": "TWAP",
+    "ema9": 25146.32,
+    "ema21": 25122.55,
+    "atr": 14.26,
+    "candles": 40
+  },
+  "previous_day": {
+    "date": "2026-10-19",
+    "open": 24900.0,
+    "high": 25040.0,
+    "low": 24880.0,
+    "close": 24950.0
+  },
+  "pivots": {
+    "P": 24956.67,
+    "R1": 25033.33,
+    "R2": 25116.67,
+    "R3": 25193.33,
+    "S1": 24873.33,
+    "S2": 24796.67,
+    "S3": 24713.33,
+    "CPR_TC": 24960.0,
+    "CPR_BC": 24953.33,
+    "CPR_width": 6.67
+  },
+  "option_chain_summary": {
+    "pcr": 1.62,
+    "total_call_oi": 4610808,
+    "total_put_oi": 7463056,
+    "call_oi_walls": [
+      {
+        "strike": 25450,
+        "oi": 450000,
+        "oi_change": 45000
+      },
+      {
+        "strike": 25400,
+        "oi": 361520,
+        "oi_change": 36152
+      }
+    ],
+    "put_oi_walls": [
+      {
+        "strike": 24950,
+        "oi": 720000,
+        "oi_change": 72000
+      },
+      {
+        "strike": 24900,
+        "oi": 578432,
+        "oi_change": 57843
+      }
+    ],
+    "max_pain": 25250,
+    "strike_step": 50,
+    "note": "OI walls and max pain use only the strikes fetched (OPTION_STRIKE_COUNT each side of ATM)."
+  },
+  "levels": {
+    "immediate_support": {
+      "level": 25116.67,
+      "sources": [
+        "R2"
+      ],
+      "strength": 1
+    },
+    "immediate_resistance": {
+      "level": 25168.46,
+      "sources": [
+        "Day high"
+      ],
+      "strength": 1
+    },
+    "support": [
+      {
+        "level": 25116.67,
+        "sources": [
+          "R2"
+        ],
+        "strength": 1
+      },
+      {
+        "level": 25031.86,
+        "sources": [
+          "ORB high",
+          "PDH",
+          "R1"
+        ],
+        "strength": 3
+      },
+      {
+        "level": 24995.0,
+        "sources": [
+          "Day low",
+          "ORB low"
+        ],
+        "strength": 2
+      }
+    ],
+    "resistance": [
+      {
+        "level": 25168.46,
+        "sources": [
+          "Day high"
+        ],
+        "strength": 1
+      },
+      {
+        "level": 25193.33,
+        "sources": [
+          "R3"
+        ],
+        "strength": 1
+      },
+      {
+        "level": 25400.0,
+        "sources": [
+          "Call OI wall 25400"
+        ],
+        "strength": 1
+      }
+    ]
+  },
+  "bias": {
+    "direction": "BULLISH",
+    "score": 4,
+    "max_score": 4,
+    "threshold": 2,
+    "reasons": [
+      "Price above TWAP (25083.32)",
+      "EMA9 25146.32 above EMA21 25122.55 (uptrend)",
+      "Price above CPR top (24960.0)",
+      "PCR 1.62 - heavy put writing (bullish)"
+    ]
+  },
+  "strategy": {
+    "id": "confluence",
+    "name": "Confluence (default)",
+    "direction": "BULLISH",
+    "status": "Score 4 of \u00b14 (needs \u00b12)",
+    "reasons": [
+      "Price above TWAP (25083.32)",
+      "EMA9 25146.32 above EMA21 25122.55 (uptrend)",
+      "Price above CPR top (24960.0)",
+      "PCR 1.62 - heavy put writing (bullish)"
+    ]
+  },
+  "trade": {
+    "action": "BUY CE",
+    "reason": "Confluence (default): bullish - Score 4 of \u00b14 (needs \u00b12)",
+    "index": {
+      "entry": 25163.46,
+      "entry_rule": "Enter when Nifty trades above 25163.46",
+      "stoploss": 25142.07,
+      "stoploss_basis": "1.5 x ATR",
+      "target1": 25193.33,
+      "target1_basis": "R3",
+      "target2": 25400.0,
+      "target2_basis": "Call OI wall 25400",
+      "risk_points": 21.39,
+      "risk_reward_t1": 1.4,
+      "risk_reward_t2": 11.06,
+      "atr": 14.26
+    },
+    "option": {
+      "symbol": "NSE:NIFTY26O2825150CE",
+      "fyToken": "101125150CE",
+      "underlying": "NIFTY",
+      "option_type": "CE",
+      "strike": 25150,
+      "atm_strike": 25150,
+      "moneyness": "ATM",
+      "expiry_date": "28-10-2026",
+      "expiry_epoch": "1761645600",
+      "lot_size": 65,
+      "ltp": 127.17,
+      "bid": 126.67,
+      "ask": 127.67,
+      "change": 1.0,
+      "change_pct": 1.0,
+      "volume": 417756,
+      "oi": 139252,
+      "oi_change": 13925,
+      "greeks": {
+        "delta": 0.52,
+        "gamma": 0.001,
+        "theta": -12.0,
+        "vega": 9.0,
+        "iv": 12.5
+      },
+      "delta_used": 0.52,
+      "delta_source": "fyers",
+      "est_entry_premium": 127.15,
+      "est_stoploss_premium": 116.05,
+      "est_target1_premium": 142.7,
+      "est_target2_premium": 250.15,
+      "est_capital_per_lot": 8264.75,
+      "est_risk_per_lot": 721.5,
+      "premium_note": "Estimated from delta only; ignores gamma, theta (time decay) and IV changes."
+    }
+  },
+  "disclaimer": "Rule-based technical levels for information only. Not investment advice and not a prediction. Options can lose value quickly; trade at your own risk."
+}

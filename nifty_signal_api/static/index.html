@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nifty Signal</title>
+<style>
+  :root {
+    --bg: #f4f6f9; --card: #ffffff; --text: #17202b; --muted: #637083; --line: #e3e7ee;
+    --green: #0f8a4c; --green-bg: #e6f5ec; --red: #c62f2f; --red-bg: #fdecec;
+    --amber: #a86400; --amber-bg: #fff4e0; --blue: #2457c5; --blue-bg: #e9f0fd;
+    --grey-bg: #eef1f5; --on-blue: #ffffff; --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f141b; --card: #171e28; --text: #e8edf3; --muted: #94a1b2; --line: #263142;
+      --green: #3ccf84; --green-bg: #12301f; --red: #ff6b6b; --red-bg: #3a1717;
+      --amber: #f5b14c; --amber-bg: #33260f; --blue: #7ea6ff; --blue-bg: #17264a;
+      --grey-bg: #1f2835; --on-blue: #0b1220; --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 16px; }
+  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -.01em; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .dot.live { background: var(--green); box-shadow: 0 0 0 3px var(--green-bg); }
+  .dot.off { background: var(--red); }
+  .spacer { flex: 1; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  select, button, input { font: inherit; border-radius: 8px; border: 1px solid var(--line);
+         background: var(--card); color: var(--text); padding: 7px 10px; }
+  button { cursor: pointer; font-weight: 600; }
+  button.primary { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+  button:disabled { opacity: .6; cursor: default; }
+  label.toggle { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+
+  .banner { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; display: none;
+            align-items: center; gap: 12px; flex-wrap: wrap; }
+  .banner.show { display: flex; }
+  .banner.warn { background: var(--amber-bg); color: var(--amber); }
+  .banner.err { background: var(--red-bg); color: var(--red); }
+  .banner.ok { background: var(--green-bg); color: var(--green); }
+
+  .grid { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+          padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+             margin: 0 0 10px; font-weight: 700; }
+  .span2 { grid-column: 1 / -1; }
+
+  /* top row */
+  .top { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; }
+  .price { font-size: 34px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .chg { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .up { color: var(--green); } .down { color: var(--red); }
+  .mini { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; color: var(--muted); font-size: 13px; }
+  .mini b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+  .signal { border-radius: 12px; padding: 14px 16px; }
+  .signal.buyce { background: var(--green-bg); color: var(--green); }
+  .signal.buype { background: var(--red-bg); color: var(--red); }
+  .signal.none { background: var(--grey-bg); color: var(--muted); }
+  .signal .big { font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+  .signal .sub { color: var(--text); margin-top: 2px; }
+  .meter { display: flex; gap: 4px; margin-top: 12px; align-items: center; }
+  .meter span.seg { flex: 1; height: 8px; border-radius: 4px; background: var(--line); }
+  .meter span.seg.on.neg { background: var(--red); }
+  .meter span.seg.on.pos { background: var(--green); }
+  .meter-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* plan ladder */
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  td.num, th.num { text-align: right; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .tag.t { background: var(--green-bg); color: var(--green); }
+  .tag.e { background: var(--blue-bg); color: var(--blue); }
+  .tag.s { background: var(--red-bg); color: var(--red); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .rr { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; }
+  .rr span { background: var(--grey-bg); border-radius: 8px; padding: 4px 8px; }
+
+  /* option */
+  .sym { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .sym code { font-family: inherit; font-size: 16px; font-weight: 700; letter-spacing: .02em;
+              background: var(--grey-bg); padding: 6px 10px; border-radius: 8px; word-break: break-all; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px 14px; }
+  .kv div { font-size: 13px; color: var(--muted); }
+  .kv b { display: block; font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .what { margin: 0 0 10px; font-size: 14px; }
+
+  /* levels */
+  .levels { display: flex; flex-direction: column; gap: 6px; }
+  .lvl { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; flex-wrap: wrap; }
+  .lvl.res { background: var(--red-bg); }
+  .lvl.sup { background: var(--green-bg); }
+  .lvl.now { background: var(--blue-bg); color: var(--blue); font-weight: 700; }
+  .lvl .v { font-weight: 750; min-width: 90px; font-variant-numeric: tabular-nums; }
+  .lvl .k { font-size: 12px; font-weight: 700; min-width: 86px; }
+  .lvl.res .k { color: var(--red); } .lvl.sup .k { color: var(--green); }
+  .lvl .src { font-size: 12px; color: var(--muted); flex: 1; min-width: 120px; }
+  .lvl .pts { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .stars { letter-spacing: 1px; font-size: 12px; color: var(--amber); }
+
+  ul.reasons { margin: 0; padding-left: 18px; }
+  ul.reasons li { margin: 4px 0; }
+  .facts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; }
+  .facts span { background: var(--grey-bg); border-radius: 8px; padding: 4px 8px; }
+
+  details.gloss { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  details.gloss summary { cursor: pointer; font-weight: 600; color: var(--blue); }
+  details.gloss dl { margin: 8px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px; }
+  details.gloss dt { font-weight: 700; color: var(--text); }
+  details.gloss dd { margin: 0; }
+  .summary { font-weight: 650; margin-bottom: 8px; }
+  /* strategy */
+  .stratline { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .stratline b { color: var(--text); }
+  .strats { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .strat { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .strat.sel { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-bg); }
+  .strat h3 { margin: 0; font-size: 15px; }
+  .strat .style { font-size: 12px; color: var(--blue); font-weight: 700; }
+  .strat ul { margin: 0; padding-left: 18px; font-size: 13px; }
+  .strat .best { font-size: 12px; color: var(--muted); }
+  .strat button { margin-top: auto; }
+
+  /* paper trading */
+  .acct { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .acct div { background: var(--grey-bg); border-radius: 10px; padding: 8px 10px; font-size: 12px; color: var(--muted); }
+  .acct b { display: block; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .order { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 12px; border: 1px dashed var(--line);
+           border-radius: 12px; margin-bottom: 14px; }
+  .order label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .order input[type=number] { width: 80px; }
+  .order .est { font-size: 13px; color: var(--muted); }
+  .order .est b { color: var(--text); }
+  .subhead { font-size: 13px; font-weight: 700; margin: 14px 0 6px; }
+  .tablewrap { overflow-x: auto; }
+  .tablewrap table { min-width: 640px; }
+  .tablewrap th, .tablewrap td { white-space: nowrap; }
+  td.pos { color: var(--green); font-weight: 700; } td.neg { color: var(--red); font-weight: 700; }
+  .pill { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--grey-bg); }
+  .pill.open { background: var(--blue-bg); color: var(--blue); }
+  .pill.pending { background: var(--amber-bg); color: var(--amber); }
+  button.small { padding: 4px 9px; font-size: 13px; }
+  button.danger { color: var(--red); }
+  .empty { color: var(--muted); font-size: 13px; padding: 6px 0; }
+  .papernote { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  /* auto trading */
+  .autohead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .autohead h2 { margin: 0; }
+  .state { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; letter-spacing: .03em; }
+  .state.RUNNING { background: var(--green-bg); color: var(--green); }
+  .state.ENTRY_CLOSED, .state.BEFORE_OPEN, .state.WAITING_LOGIN { background: var(--amber-bg); color: var(--amber); }
+  .state.STOPPED, .state.MARKET_CLOSED { background: var(--grey-bg); color: var(--muted); }
+  .automsg { font-size: 13px; color: var(--muted); }
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .tile { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .tile h3 { margin: 0; font-size: 14px; }
+  .tile .badge { align-self: flex-start; font-size: 12px; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+  .badge.ce { background: var(--green-bg); color: var(--green); }
+  .badge.pe { background: var(--red-bg); color: var(--red); }
+  .badge.none { background: var(--grey-bg); color: var(--muted); }
+  .tile .st { font-size: 13px; color: var(--muted); }
+  .tile .posn { font-size: 13px; background: var(--blue-bg); border-radius: 8px; padding: 6px 8px; }
+  .tile .today { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .tile .today b { color: var(--text); }
+  .logbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
+  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-weight: 600; }
+  .chip.on { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+  .log { max-height: 420px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px;
+         font-size: 13px; font-variant-numeric: tabular-nums; }
+  .log .row { display: grid; grid-template-columns: 74px 120px 1fr; gap: 8px; padding: 6px 10px;
+              border-bottom: 1px solid var(--line); align-items: start; }
+  .log .row:last-child { border-bottom: 0; }
+  .log .tm { color: var(--muted); }
+  .log .who { font-weight: 700; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log .row.entry, .log .row.order { background: var(--blue-bg); }
+  .log .row.win { background: var(--green-bg); }
+  .log .row.loss { background: var(--red-bg); }
+  .log .row.error { background: var(--red-bg); color: var(--red); }
+  .log .row.warn { background: var(--amber-bg); }
+  .log .row.signal .msg { font-weight: 650; }
+  .log .row.summary { background: var(--grey-bg); font-weight: 700; }
+  .log .row.system .msg { color: var(--muted); }
+  .log .row.new { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { box-shadow: inset 4px 0 0 var(--blue); } to { box-shadow: inset 0 0 0 transparent; } }
+  @media (max-width: 760px) { .log .row { grid-template-columns: 60px 1fr; } .log .msg { grid-column: 1 / -1; } }
+  /* market board */
+  .mkthead { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .mkthead h2 { margin: 0; }
+  .feed { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--grey-bg); color: var(--muted); }
+  .feed.websocket { background: var(--green-bg); color: var(--green); }
+  .feed.rest { background: var(--amber-bg); color: var(--amber); }
+  .strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .strip > div { background: var(--grey-bg); border-radius: 10px; padding: 8px 10px; font-size: 12px; color: var(--muted); }
+  .strip b { display: block; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .adbar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 6px; background: var(--line); }
+  .adbar .a { background: var(--green); } .adbar .d { background: var(--red); }
+  .movers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .movers .box { border: 1px solid var(--line); border-radius: 12px; padding: 10px; min-width: 0; }
+  .movers h3 { margin: 0 0 6px; font-size: 13px; }
+  .movers .it { display: flex; justify-content: space-between; gap: 6px; font-size: 13px; padding: 3px 0; cursor: pointer;
+                font-variant-numeric: tabular-nums; }
+  .movers .it span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .tools input { min-width: 200px; }
+  th.sort { cursor: pointer; user-select: none; }
+  th.sort:hover { color: var(--blue); }
+  tr.click { cursor: pointer; } tr.click:hover td { background: var(--grey-bg); }
+  .bsbar { display: flex; width: 80px; height: 8px; border-radius: 4px; overflow: hidden; background: var(--line); }
+  .bsbar .b { background: var(--green); } .bsbar .s { background: var(--red); }
+  .side { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .side.p3, .side.p2 { background: var(--green-bg); color: var(--green); }
+  .side.p1 { color: var(--green); }
+  .side.n1 { color: var(--red); }
+  .side.n2, .side.n3 { background: var(--red-bg); color: var(--red); }
+  .side.z { color: var(--muted); }
+  .side.buy { background: var(--green-bg); color: var(--green); }
+  .side.sell { background: var(--red-bg); color: var(--red); }
+  .side.neutral { color: var(--muted); }
+  .ob { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 760px; }
+  .ob table td { padding: 5px 6px; }
+  .ob .qty { position: relative; }
+  .ob .bar { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; opacity: .25; }
+  .ob .bid .bar { right: 0; background: var(--green); } .ob .ask .bar { left: 0; background: var(--red); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  @media (max-width: 900px) { .movers { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .movers { grid-template-columns: 1fr 1fr; } .movers .box { padding: 8px; } .ob { grid-template-columns: 1fr; } }
+  footer { color: var(--muted); font-size: 12px; margin: 18px 2px 8px; }
+  .skeleton { color: var(--muted); }
+
+  @media (max-width: 760px) {
+    .grid, .top { grid-template-columns: 1fr; }
+    .price { font-size: 30px; }
+    .signal .big { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Nifty Signal</h1>
+    <span class="status"><span id="dot" class="dot"></span><span id="statusText">Connecting…</span></span>
+    <span class="spacer"></span>
+    <div class="controls">
+      <select id="strategy" title="Strategy"><option value="confluence">Confluence (default)</option></select>
+      <select id="moneyness" title="Which strike to suggest">
+        <option value="ATM">At the money (ATM)</option>
+        <option value="ITM1">1 strike in the money</option>
+        <option value="ITM2">2 strikes in the money</option>
+        <option value="OTM1">1 strike out of the money</option>
+        <option value="OTM2">2 strikes out of the money</option>
+      </select>
+      <select id="expiry" title="Option expiry"><option value="">Nearest expiry</option></select>
+      <label class="toggle"><input type="checkbox" id="auto" checked> Auto-refresh</label>
+      <button id="refresh" class="primary">Refresh</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner"></div>
+
+  <section class="card" id="autoCard" style="margin-bottom:14px">
+    <div class="autohead">
+      <h2>Auto paper trading — all strategies</h2>
+      <span id="autoState" class="state STOPPED">…</span>
+      <span id="autoMsg" class="automsg"></span>
+      <span class="spacer"></span>
+      <button id="autoBtn" class="primary">Start</button>
+    </div>
+    <div class="acct" id="autoAcct"></div>
+    <div class="board" id="board"><div class="empty">Loading…</div></div>
+    <div class="papernote" id="autoRules"></div>
+  </section>
+
+  <section class="card" style="margin-bottom:14px">
+    <div class="autohead"><h2>Live log</h2><span class="automsg" id="logCount"></span></div>
+    <div class="logbar" id="logbar">
+      <span class="chip on" data-f="all">All</span>
+      <span class="chip" data-f="trades">Entries &amp; exits</span>
+      <span class="chip" data-f="signal">Signals</span>
+      <span class="chip" data-f="problems">Warnings &amp; errors</span>
+      <span class="chip" data-f="summary">Summary</span>
+    </div>
+    <div class="log" id="log"><div class="empty" style="padding:10px">No events yet today.</div></div>
+  </section>
+
+
+  <section class="card" style="margin-bottom:14px" id="mktCard">
+    <div class="mkthead">
+      <h2>Nifty 50 stocks — live</h2>
+      <span class="feed" id="feedState">…</span>
+      <span class="automsg" id="feedMsg"></span>
+    </div>
+    <div class="strip" id="mktStrip"></div>
+    <div class="movers">
+      <div class="box"><h3 class="up">Top gainers</h3><div id="mvG"></div></div>
+      <div class="box"><h3 class="down">Top losers</h3><div id="mvL"></div></div>
+      <div class="box"><h3 class="up">Pushing Nifty up (pts)</h3><div id="mvU"></div></div>
+      <div class="box"><h3 class="down">Dragging Nifty down (pts)</h3><div id="mvD"></div></div>
+    </div>
+    <div class="tools">
+      <input id="stockSearch" placeholder="Search stock or sector">
+      <span class="tabs" id="sideTabs">
+        <span class="chip on" data-side="all">All</span>
+        <span class="chip" data-side="buy">Buy side</span>
+        <span class="chip" data-side="sell">Sell side</span>
+      </span>
+      <span class="automsg">Click a stock to see its order book. Click a column to sort.</span>
+    </div>
+    <div class="tablewrap" id="stockTable"><div class="empty">Loading…</div></div>
+    <div class="papernote" id="mktNote"></div>
+  </section>
+
+  <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:14px">
+    <section class="card" id="obCard">
+      <h2>Order book <span id="obTitle" style="text-transform:none;letter-spacing:0;color:var(--text)"></span></h2>
+      <div id="ob" class="empty">Select a stock or an option to see its live order book.</div>
+    </section>
+    <section class="card">
+      <h2>Most active Nifty options</h2>
+      <div class="strip" id="optStrip"></div>
+      <div class="tabs" id="optTabs">
+        <span class="chip on" data-t="most_active">All</span>
+        <span class="chip" data-t="most_active_calls">Calls</span>
+        <span class="chip" data-t="most_active_puts">Puts</span>
+        <span class="chip" data-t="top_oi_addition">OI added</span>
+        <span class="chip" data-t="top_oi_reduction">OI cut</span>
+      </div>
+      <div class="tablewrap" id="optTable"><div class="empty">Loading…</div></div>
+      <div class="papernote">Buildup: price ↑ + OI ↑ = long buildup (buyers) · price ↓ + OI ↑ = short buildup (sellers / writers) ·
+        price ↑ + OI ↓ = short covering · price ↓ + OI ↓ = long unwinding. "Trade at ask" = buyers paying the offer,
+        "at bid" = sellers hitting bids.</div>
+    </section>
+  </div>
+  <div class="top">
+    <section class="card">
+      <h2>Nifty 50</h2>
+      <div class="price" id="ltp">—</div>
+      <div class="chg" id="chg">&nbsp;</div>
+      <div class="mini" id="ohlc"></div>
+    </section>
+
+    <section class="card">
+      <h2>Signal</h2>
+      <div id="signal" class="signal none">
+        <div class="big" id="sigBig">Loading…</div>
+        <div class="sub" id="sigSub">&nbsp;</div>
+      </div>
+      <div class="stratline" id="stratline"></div>
+      <div class="meter" id="meter" title="Overall market mood from all indicators"></div>
+      <div class="meter-labels"><span>Bearish mood</span><span>Market mood</span><span>Bullish mood</span></div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section class="card">
+      <h2>Trade plan</h2>
+      <div id="plan" class="skeleton">Waiting for data…</div>
+    </section>
+
+    <section class="card">
+      <h2>Option to trade</h2>
+      <div id="option" class="skeleton">Waiting for data…</div>
+    </section>
+
+    <section class="card span2" id="paperCard">
+      <h2>Paper trading — manual trades &amp; account</h2>
+      <div class="acct" id="acct"></div>
+      <div class="order" id="order">
+        <label>Lots <input type="number" id="lots" min="1" max="5000" value="1"></label>
+        <label>Enter
+          <select id="orderType">
+            <option value="market">Now (at current price)</option>
+            <option value="trigger">When Nifty reaches entry level</option>
+          </select>
+        </label>
+        <label>Exit at
+          <select id="exitAt">
+            <option value="T1">Target 1</option>
+            <option value="T2">Target 2</option>
+          </select>
+        </label>
+        <button id="placeBtn" class="primary">Paper trade this signal</button>
+        <span class="est" id="orderEst"></span>
+      </div>
+      <div class="subhead">Open positions</div>
+      <div class="tablewrap" id="openPos"><div class="empty">No open paper trades.</div></div>
+      <div class="subhead">Performance by strategy</div>
+      <div class="tablewrap" id="perf"><div class="empty">No closed trades yet.</div></div>
+      <div class="subhead">Trade history</div>
+      <div class="tablewrap" id="hist"><div class="empty">No closed trades yet.</div></div>
+      <div class="papernote">Positions are checked every few seconds: they exit automatically when Nifty hits the
+        stop-loss or your target, and at 3:15 PM. Buys fill at the ask, sells at the bid, and approximate
+        charges are deducted. No real orders are placed.
+        <span style="float:right"><input type="number" id="resetCap" value="1000000000" min="1000" step="1000" style="width:130px">
+        <button id="resetBtn" class="small danger">Reset account</button></span></div>
+    </section>
+
+    <section class="card">
+      <h2>Support &amp; resistance</h2>
+      <div id="levels" class="levels skeleton">Waiting for data…</div>
+    </section>
+
+    <section class="card">
+      <h2>Why this signal</h2>
+      <div class="summary" id="summary"></div>
+      <ul class="reasons" id="reasons"><li class="skeleton">Waiting for data…</li></ul>
+      <div class="facts" id="facts"></div>
+      <details class="gloss">
+        <summary>What do these terms mean?</summary>
+        <dl>
+          <dt>TWAP / VWAP</dt><dd>Average Nifty price so far today. Above it = buyers in control.</dd>
+          <dt>EMA 9 / 21</dt><dd>Short and medium moving averages. 9 above 21 = uptrend.</dd>
+          <dt>CPR</dt><dd>Central pivot range from yesterday's prices. Above it = bullish day, below = bearish, inside = sideways.</dd>
+          <dt>PCR</dt><dd>Put-call ratio of open interest. High (above 1.2) = more put sellers = support below; low (below 0.8) = more call sellers = resistance above.</dd>
+          <dt>Pivot R1–R3 / S1–S3</dt><dd>Resistance and support levels worked out from yesterday's high, low and close.</dd>
+          <dt>OI wall</dt><dd>Strike with the most open option contracts; it often acts as a barrier.</dd>
+          <dt>Max pain</dt><dd>Strike where option buyers as a group would lose the most at expiry.</dd>
+          <dt>ATR</dt><dd>Average size of a 5-minute candle; used to size the stop-loss.</dd>
+          <dt>Dots ●</dt><dd>How many different methods point to the same level. More dots = stronger level.</dd>
+        </dl>
+      </details>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:14px">
+    <h2>Available strategies</h2>
+    <div class="strats" id="strats"><div class="empty">Loading…</div></div>
+  </section>
+
+  <footer id="disclaimer">
+    Rule-based technical levels for information only. Not investment advice and not a prediction.
+  </footer>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const inr = (v, d = 2) => v == null || isNaN(v) ? "—"
+      : Number(v).toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const int = (v) => v == null ? "—" : Number(v).toLocaleString("en-IN");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  let timer = null, busy = false;
+
+  function headers() {
+    const h = {};
+    const key = store.get("niftyApiKey");
+    if (key) h["X-API-Key"] = key;
+    return h;
+  }
+
+  function banner(kind, html) {
+    const b = $("banner");
+    if (!kind) { b.className = "banner"; b.innerHTML = ""; return; }
+    b.className = "banner show " + kind;
+    b.innerHTML = html;
+  }
+
+  function idle(msg) {
+    $("signal").className = "signal none";
+    $("sigBig").textContent = msg;
+    $("sigSub").innerHTML = "&nbsp;";
+  }
+
+  function status(state, text) {
+    $("dot").className = "dot " + (state || "");
+    $("statusText").textContent = text;
+  }
+
+  async function login() {
+    try {
+      const r = await fetch("/auth/login-url");
+      const d = await r.json();
+      if (d.login_url) window.location.href = d.login_url;
+      else banner("err", esc(d.error || "Could not get the Fyers login link."));
+    } catch (e) { banner("err", "Could not reach the server."); }
+  }
+
+  function askKey() {
+    banner("warn", `This API needs an access key.
+      <input id="keyIn" placeholder="Enter API key" style="min-width:200px">
+      <button id="keySave" class="primary">Save</button>`);
+    $("keySave").onclick = () => { store.set("niftyApiKey", $("keyIn").value.trim()); banner(); load(); };
+  }
+
+  async function loadExpiries() {
+    try {
+      const r = await fetch("/api/nifty/expiries", { headers: headers() });
+      if (!r.ok) return;
+      const d = await r.json();
+      const sel = $("expiry"), keep = sel.value;
+      sel.innerHTML = '<option value="">Nearest expiry</option>' +
+        (d.expiries || []).map((e) => `<option value="${esc(e.expiry)}">${esc(e.date)}</option>`).join("");
+      sel.value = keep;
+    } catch {}
+  }
+
+  async function load() {
+    if (busy) return;
+    busy = true;
+    $("refresh").disabled = true;
+    const qs = new URLSearchParams({ moneyness: $("moneyness").value, strategy: $("strategy").value });
+    if ($("expiry").value) qs.set("expiry", $("expiry").value);
+    try {
+      const r = await fetch("/api/nifty/signal?" + qs, { headers: headers() });
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 401 && /X-API-Key/i.test(d.error || "")) { status("off", "Key needed"); idle("API key needed"); askKey(); return; }
+      if (r.status === 401) {
+        status("off", "Fyers login needed");
+        idle("Log in to see the signal");
+        banner("warn", `You need to log in to Fyers for today before data can load.
+          <button id="loginBtn" class="primary">Log in to Fyers</button>`);
+        $("loginBtn").onclick = login;
+        return;
+      }
+      if (!r.ok || !d.success) {
+        status("off", "Error");
+        idle("Data unavailable");
+        banner("err", "Could not load data: " + esc(d.error || r.statusText));
+        return;
+      }
+      if (!/login=/.test(location.search)) banner();
+      try { render(d); } catch (e) { console.error(e); banner("err", "Display error: " + esc(e.message)); }
+      const t = new Date(d.timestamp);
+      status("live", "Updated " + t.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+    } catch (e) {
+      status("off", "Offline");
+      idle("Server not reachable");
+      banner("err", "Could not reach the server. Is it running?");
+    } finally {
+      busy = false;
+      $("refresh").disabled = false;
+    }
+  }
+
+  let lastReport = null;
+
+  function render(d) {
+    lastReport = d;
+    updateOrderForm();
+    const u = d.underlying || {}, t = d.trade || {}, b = d.bias || {}, st = d.strategy || {};
+
+    // price
+    $("ltp").textContent = inr(u.ltp);
+    const up = (u.change || 0) >= 0;
+    $("chg").className = "chg " + (up ? "up" : "down");
+    $("chg").textContent = `${up ? "▲" : "▼"} ${inr(Math.abs(u.change || 0))} (${inr(u.change_pct)}%)`;
+    $("ohlc").innerHTML = [
+      ["Open", u.open], ["High", u.high], ["Low", u.low], ["Prev close", u.prev_close], ["India VIX", u.india_vix],
+    ].map(([k, v]) => `<span>${k} <b>${inr(v)}</b></span>`).join("");
+
+    // signal
+    const act = t.action || "NO TRADE";
+    const sig = $("signal");
+    if (act === "BUY CE") {
+      sig.className = "signal buyce";
+      $("sigBig").textContent = "BUY CALL (CE)";
+      $("sigSub").textContent = "Expecting Nifty to go UP.";
+    } else if (act === "BUY PE") {
+      sig.className = "signal buype";
+      $("sigBig").textContent = "BUY PUT (PE)";
+      $("sigSub").textContent = "Expecting Nifty to go DOWN.";
+    } else {
+      sig.className = "signal none";
+      $("sigBig").textContent = "NO TRADE — WAIT";
+      $("sigSub").textContent = t.reason || "No clear setup right now.";
+    }
+    const score = b.score || 0, max = b.max_score || 4;
+    let segs = "";
+    for (let i = -max; i <= max; i++) {
+      if (i === 0) continue;
+      const on = (i < 0 && score <= i) || (i > 0 && score >= i);
+      segs += `<span class="seg ${on ? "on" : ""} ${i < 0 ? "neg" : "pos"}" title="${i}"></span>`;
+    }
+    $("meter").innerHTML = segs;
+
+    // plan
+    const ix = t.index, op = t.option;
+    if (!ix) {
+      $("plan").className = "";
+      $("plan").innerHTML = `<p class="what">No entry right now. The page refreshes automatically —
+        a plan appears here when the trend is clear.</p>`;
+    } else {
+      const rows = [
+        ["Target 2", "t", ix.target2, op && op.est_target2_premium, ix.target2_basis],
+        ["Target 1", "t", ix.target1, op && op.est_target1_premium, ix.target1_basis],
+        ["Entry", "e", ix.entry, op && op.est_entry_premium, ix.entry_rule],
+        ["Stop-loss", "s", ix.stoploss, op && op.est_stoploss_premium, ix.stoploss_basis],
+      ];
+      if (act === "BUY PE") { rows.reverse(); }
+      $("plan").className = "";
+      $("plan").innerHTML = `
+        <table>
+          <thead><tr><th></th><th class="num">Nifty level</th><th class="num">Option price*</th></tr></thead>
+          <tbody>${rows.map(([n, c, lvl, prem, why]) => `
+            <tr title="${esc(why)}"><td><span class="tag ${c}">${n}</span></td>
+              <td class="num"><b>${inr(lvl)}</b></td><td class="num">₹${inr(prem)}</td></tr>`).join("")}
+          </tbody>
+        </table>
+        <div class="rr">
+          <span>Risk: <b>${inr(ix.risk_points, 0)} pts</b></span>
+          <span>Reward : Risk (T1) <b>${inr(ix.risk_reward_t1, 1)}x</b></span>
+          <span>Reward : Risk (T2) <b>${inr(ix.risk_reward_t2, 1)}x</b></span>
+        </div>
+        <div class="hint">${esc(ix.entry_rule)}. Exit if Nifty hits the stop-loss.
+          *Option prices are estimates from delta and ignore time decay.</div>`;
+    }
+
+    // option
+    if (!op) {
+      $("option").className = "";
+      $("option").innerHTML = `<p class="what">No option suggested while there is no trade.</p>`;
+    } else {
+      const g = op.greeks || {};
+      const plain = op.option_type === "CE"
+        ? "Call option — gains if Nifty rises." : "Put option — gains if Nifty falls.";
+      $("option").className = "";
+      $("option").innerHTML = `
+        <div class="sym"><code id="symCode">${esc(op.symbol)}</code>
+          <button id="copySym" title="Copy symbol">Copy</button></div>
+        <p class="what">${plain} Strike <b>${int(op.strike)}</b>, expiry <b>${esc(op.expiry_date)}</b>.</p>
+        <div class="kv">
+          <div>Last price<b>₹${inr(op.ltp)}</b></div>
+          <div>Bid / Ask<b>${inr(op.bid)} / ${inr(op.ask)}</b></div>
+          <div>Lot size<b>${int(op.lot_size)}</b></div>
+          <div>Cost per lot*<b>₹${inr(op.est_capital_per_lot, 0)}</b></div>
+          <div>Risk per lot*<b>₹${inr(op.est_risk_per_lot, 0)}</b></div>
+          <div>Open interest<b>${int(op.oi)}</b></div>
+          <div>Volume<b>${int(op.volume)}</b></div>
+          <div>IV<b>${g.iv != null ? inr(g.iv, 1) + "%" : "—"}</b></div>
+          <div>Delta<b>${inr(op.delta_used, 2)}</b></div>
+          <div>ATM strike<b>${int(op.atm_strike)}</b></div>
+          <div>fyToken<b style="font-size:13px">${esc(op.fyToken)}</b></div>
+        </div>`;
+      $("copySym").onclick = async () => {
+        try { await navigator.clipboard.writeText(op.symbol); $("copySym").textContent = "Copied"; }
+        catch { $("copySym").textContent = "Select & copy"; }
+        setTimeout(() => { const b = $("copySym"); if (b) b.textContent = "Copy"; }, 1500);
+      };
+    }
+
+    // levels
+    const NAMES = { P: "Pivot", R1: "Pivot R1", R2: "Pivot R2", R3: "Pivot R3", S1: "Pivot S1",
+      S2: "Pivot S2", S3: "Pivot S3", CPR_TC: "CPR top", CPR_BC: "CPR bottom", PDH: "Prev day high",
+      PDL: "Prev day low", "ORB high": "Opening range high", "ORB low": "Opening range low",
+      "Day high": "Today's high", "Day low": "Today's low" };
+    const nice = (src) => NAMES[src] || src;
+    const L = d.levels || {}, res = (L.resistance || []).slice().reverse(), sup = L.support || [];
+    const lvlRow = (cls, label, l) => {
+      const dist = l.level - u.ltp;
+      return `<div class="lvl ${cls}"><span class="k">${label}</span><span class="v">${inr(l.level)}</span>
+        <span class="src">${esc((l.sources || []).map(nice).join(" · "))}</span>
+        <span class="stars" title="${l.strength} sources agree">${"●".repeat(Math.min(l.strength, 5))}</span>
+        <span class="pts">${dist > 0 ? "+" : ""}${inr(dist, 0)} pts</span></div>`;
+    };
+    $("levels").className = "levels";
+    $("levels").innerHTML =
+      res.map((l, i) => lvlRow("res", i === res.length - 1 ? "Resistance 1" : `Resistance ${res.length - i}`, l)).join("") +
+      `<div class="lvl now"><span class="k">Now</span><span class="v">${inr(u.ltp)}</span>
+        <span class="src">Current Nifty price</span></div>` +
+      sup.map((l, i) => lvlRow("sup", `Support ${i + 1}`, l)).join("");
+
+    // reasons + facts
+    const bull = (b.reasons || []).filter((r) => /above|bullish|uptrend/i.test(r) && !/below/i.test(r)).length;
+    const bear = (b.reasons || []).filter((r) => /below|bearish|downtrend/i.test(r)).length;
+    $("summary").textContent = `Market mood: ${bull} indicator${bull === 1 ? "" : "s"} point UP, ${bear} point DOWN.` +
+      ` Below: the ${st.name || "strategy"} rules for this signal.`;
+    $("stratline").innerHTML = `Strategy: <b>${esc(st.name || "")}</b> · ${esc(st.status || "")}`;
+    $("reasons").innerHTML = (st.reasons || b.reasons || []).map((r) => `<li>${esc(r)}</li>`).join("") || "<li>No data</li>";
+    const oi = d.option_chain_summary || {}, pv = d.pivots || {};
+    $("facts").innerHTML = [
+      ["PCR", inr(oi.pcr)], ["Max pain", int(oi.max_pain)], ["Pivot", inr(pv.P)],
+      ["CPR", pv.CPR_BC ? `${inr(pv.CPR_BC, 0)}–${inr(pv.CPR_TC, 0)}` : "—"],
+      ["ATR (5m)", inr((d.intraday || {}).atr)],
+    ].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join("");
+
+    if (d.disclaimer) $("disclaimer").textContent = d.disclaimer;
+  }
+
+
+  // ------------------------------------------------------------------ strategies
+  let strategyList = [];
+  async function loadStrategies() {
+    try {
+      const r = await fetch("/api/strategies", { headers: headers() });
+      if (!r.ok) return;
+      strategyList = (await r.json()).strategies || [];
+      const sel = $("strategy"), keep = store.get("niftyStrategy") || sel.value;
+      sel.innerHTML = strategyList.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
+      if (strategyList.some((x) => x.id === keep)) sel.value = keep;
+      renderStrategies();
+    } catch {}
+  }
+  function renderStrategies() {
+    const cur = $("strategy").value;
+    $("strats").innerHTML = strategyList.map((x) => `
+      <div class="strat ${x.id === cur ? "sel" : ""}">
+        <span class="style">${esc(x.style)}</span>
+        <h3>${esc(x.name)}</h3>
+        <div>${esc(x.summary)}</div>
+        <ul>${x.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>
+        <div class="best"><b>Best for:</b> ${esc(x.best_for)}</div>
+        ${x.id === cur ? `<button class="small" disabled>In use</button>`
+          : `<button class="small" data-use="${esc(x.id)}">Use this strategy</button>`}
+      </div>`).join("");
+    document.querySelectorAll("[data-use]").forEach((b) => b.onclick = () => {
+      $("strategy").value = b.dataset.use; onStrategyChange(); window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+  function onStrategyChange() {
+    store.set("niftyStrategy", $("strategy").value);
+    renderStrategies();
+    load();
+  }
+
+  // ------------------------------------------------------------------ paper trading
+  const money = (v, d = 0) => v == null ? "—" : "₹" + inr(v, d);
+  const pnlCell = (v) => `<td class="num ${v > 0 ? "pos" : v < 0 ? "neg" : ""}">${v > 0 ? "+" : ""}${money(v, 0)}</td>`;
+  const hhmm = (iso) => iso ? new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "—";
+  const ddmm = (iso) => iso ? new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "";
+
+  function updateOrderForm() {
+    const t = (lastReport || {}).trade || {}, op = t.option;
+    const ok = t.action && t.action.startsWith("BUY") && op;
+    $("placeBtn").disabled = !ok;
+    if (!ok) { $("orderEst").innerHTML = "No signal right now for this strategy — nothing to trade."; return; }
+    const lots = Math.max(1, parseInt($("lots").value || "1", 10));
+    const price = op.ask || op.ltp;
+    $("orderEst").innerHTML = `${esc(t.action)} <b>${esc(op.symbol)}</b> · ${lots} lot × ${op.lot_size} = ${lots * op.lot_size} qty ·
+      approx cost <b>${cr(price * lots * op.lot_size)}</b>`;
+  }
+
+  async function loadPaper() {
+    try {
+      const r = await fetch("/api/paper/summary", { headers: headers() });
+      if (!r.ok) return;
+      const s = await r.json();
+      renderPaper(s);
+      if ((s.events || []).length) banner("ok", "Paper trades updated: " + esc(s.events.join(", ")));
+    } catch {}
+  }
+
+  function renderPaper(s) {
+    const a = s.account || {}, st = s.stats || {};
+    $("acct").innerHTML = [
+      ["Account value", cr(a.equity)], ["Cash", cr(a.cash)],
+      ["Open P&L", `<span class="${a.unrealised_pnl >= 0 ? "up" : "down"}">${cr(a.unrealised_pnl)}</span>`],
+      ["Booked P&L", `<span class="${a.realised_pnl >= 0 ? "up" : "down"}">${cr(a.realised_pnl)}</span>`],
+      ["Return", `${inr(a.total_return_pct)}%`],
+      ["Win rate", st.win_rate == null ? "—" : `${inr(st.win_rate, 0)}% (${st.wins}/${st.trades})`],
+    ].map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join("");
+
+    const act = s.active || [];
+    $("openPos").innerHTML = !act.length ? `<div class="empty">No open paper trades.</div>` : `
+      <table><thead><tr><th>#</th><th>Strategy</th><th>Option</th><th class="num">Lots</th><th>Status</th>
+        <th class="num">Entry ₹</th><th class="num">Now ₹</th><th class="num">P&L</th>
+        <th class="num">Nifty SL / Target</th><th></th></tr></thead><tbody>
+      ${act.map((t) => {
+        const tgt = t.exit_at === "T1" ? t.t1_index : t.t2_index;
+        const st = t.status === "OPEN" ? `<span class="pill open">Open</span>`
+          : `<span class="pill pending" title="Waits for Nifty to reach ${inr(t.trigger_index)}">Waiting ${inr(t.trigger_index, 0)}</span>`;
+        return `<tr><td>${t.id}</td><td>${esc(t.strategy_name)}</td><td>${esc(t.symbol)}</td>
+          <td class="num">${t.lots}</td><td>${st}</td>
+          <td class="num">${t.entry_price != null ? inr(t.entry_price) : "—"}</td>
+          <td class="num">${inr(t.last_price)}</td>
+          ${t.status === "OPEN" ? pnlCell(t.unrealised_pnl) : `<td class="num">—</td>`}
+          <td class="num">${inr(t.sl_index, 0)} / ${inr(tgt, 0)} (${t.exit_at})</td>
+          <td><button class="small" data-close="${t.id}">${t.status === "OPEN" ? "Exit now" : "Cancel"}</button></td></tr>`;
+      }).join("")}</tbody></table>`;
+    document.querySelectorAll("[data-close]").forEach((b) => b.onclick = () => closePaper(b.dataset.close, b));
+
+    const perf = s.by_strategy || [];
+    $("perf").innerHTML = !perf.length ? `<div class="empty">No closed trades yet.</div>` : `
+      <table><thead><tr><th>Strategy</th><th class="num">Trades</th><th class="num">Win rate</th>
+        <th class="num">Net P&L</th><th class="num">Avg / trade</th><th class="num">Best</th><th class="num">Worst</th>
+        <th class="num">Charges</th></tr></thead><tbody>
+      ${perf.map((p) => `<tr><td><b>${esc(p.name)}</b></td><td class="num">${p.trades}</td>
+        <td class="num">${inr(p.win_rate, 0)}%</td>${pnlCell(p.net_pnl)}${pnlCell(p.avg_pnl)}
+        ${pnlCell(p.best)}${pnlCell(p.worst)}<td class="num">${money(p.charges)}</td></tr>`).join("")}</tbody></table>`;
+
+    const hist = s.history || [];
+    $("hist").innerHTML = !hist.length ? `<div class="empty">No closed trades yet.</div>` : `
+      <table><thead><tr><th>#</th><th>When</th><th>Strategy</th><th>Option</th><th class="num">Qty</th>
+        <th class="num">Buy ₹</th><th class="num">Sell ₹</th><th class="num">Net P&L</th><th>Result</th></tr></thead><tbody>
+      ${hist.map((t) => `<tr><td>${t.id}</td><td>${ddmm(t.exit_time)} ${hhmm(t.entry_time)}–${hhmm(t.exit_time)}</td>
+        <td>${esc(t.strategy_name)}</td><td>${esc(t.symbol)}</td><td class="num">${t.status === "CLOSED" ? t.qty : "—"}</td>
+        <td class="num">${t.entry_price != null ? inr(t.entry_price) : "—"}</td>
+        <td class="num">${t.exit_price != null ? inr(t.exit_price) : "—"}</td>
+        ${t.status === "CLOSED" ? pnlCell(t.net_pnl) : `<td class="num">—</td>`}
+        <td>${esc(t.exit_reason || t.status)}</td></tr>`).join("")}</tbody></table>`;
+    $("resetCap").value = a.starting_capital || 1000000000;
+  }
+
+  async function postJSON(url, body) {
+    const r = await fetch(url, { method: "POST", headers: { ...headers(), "Content-Type": "application/json" },
+                                 body: JSON.stringify(body || {}) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.success) throw new Error(d.error || r.statusText);
+    return d;
+  }
+
+  async function placePaper() {
+    const btn = $("placeBtn");
+    btn.disabled = true;
+    try {
+      const d = await postJSON("/api/paper/trades", {
+        strategy: $("strategy").value, moneyness: $("moneyness").value, expiry: $("expiry").value,
+        lots: parseInt($("lots").value || "1", 10), order_type: $("orderType").value, exit_at: $("exitAt").value,
+      });
+      const t = d.trade;
+      banner("ok", t.status === "OPEN"
+        ? `Paper trade #${t.id} opened: ${esc(t.symbol)} at ₹${inr(t.entry_price)}.`
+        : `Paper order #${t.id} placed: buys ${esc(t.symbol)} when Nifty reaches ${inr(t.trigger_index)}.`);
+      await loadPaper();
+    } catch (e) {
+      banner("err", "Paper trade not placed: " + esc(e.message));
+    } finally { updateOrderForm(); }
+  }
+
+  async function closePaper(id, btn) {
+    btn.disabled = true;
+    try {
+      const d = await postJSON(`/api/paper/trades/${id}/close`);
+      const t = d.trade;
+      banner("ok", t.status === "CANCELLED" ? `Order #${id} cancelled.`
+        : `Trade #${id} closed at ₹${inr(t.exit_price)}. Net P&L ${money(t.net_pnl)}.`);
+      await loadPaper();
+    } catch (e) { banner("err", esc(e.message)); btn.disabled = false; }
+  }
+
+  let resetArmed = false;
+  async function resetPaper() {
+    const b = $("resetBtn");
+    if (!resetArmed) {
+      resetArmed = true; b.textContent = "Click again to confirm";
+      setTimeout(() => { resetArmed = false; b.textContent = "Reset account"; }, 4000);
+      return;
+    }
+    resetArmed = false; b.textContent = "Reset account";
+    try {
+      const d = await postJSON("/api/paper/reset", { capital: parseFloat($("resetCap").value) });
+      renderPaper(d); banner("ok", "Paper account reset.");
+    } catch (e) { banner("err", esc(e.message)); }
+  }
+
+
+  // ------------------------------------------------------------------ auto trading + live log
+  const cr = (v) => {
+    if (v == null || isNaN(v)) return "—";
+    const a = Math.abs(v), sgn = v < 0 ? "-" : "";
+    if (a >= 1e7) return `${sgn}₹${(a / 1e7).toLocaleString("en-IN", { maximumFractionDigits: 2, minimumFractionDigits: 2 })} Cr`;
+    if (a >= 1e5) return `${sgn}₹${(a / 1e5).toLocaleString("en-IN", { maximumFractionDigits: 2, minimumFractionDigits: 2 })} L`;
+    return `${sgn}₹${a.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+  };
+  const STATE_LABEL = { RUNNING: "RUNNING", ENTRY_CLOSED: "ENTRIES CLOSED", BEFORE_OPEN: "BEFORE OPEN",
+    WAITING_LOGIN: "LOGIN NEEDED", STOPPED: "STOPPED", MARKET_CLOSED: "MARKET CLOSED" };
+  const NAMES = {};
+  let autoEnabled = false;
+
+  async function loadAuto() {
+    try {
+      const r = await fetch("/api/auto/status", { headers: headers() });
+      if (!r.ok) return;
+      renderAuto(await r.json());
+    } catch {}
+  }
+
+  function renderAuto(a) {
+    autoEnabled = a.enabled;
+    $("autoState").className = "state " + a.state;
+    $("autoState").textContent = STATE_LABEL[a.state] || a.state;
+    $("autoMsg").textContent = a.message + (a.last_cycle ? ` · last check ${hhmm(a.last_cycle)}` : "");
+    $("autoBtn").textContent = a.enabled ? "Stop auto-trading" : "Start auto-trading";
+    $("autoBtn").className = a.enabled ? "" : "primary";
+    if (a.state === "WAITING_LOGIN" && !$("banner").classList.contains("show")) {
+      banner("warn", `Auto-trading is waiting for today's Fyers login.
+        <button id="loginBtn2" class="primary">Log in to Fyers</button>`);
+      $("loginBtn2").onclick = login;
+    }
+    let todayPnl = 0, openPnl = 0, trades = 0, open = 0;
+    (a.strategies || []).forEach((x) => {
+      NAMES[x.id] = x.name;
+      todayPnl += x.today.net_pnl || 0; openPnl += x.today.open_pnl || 0; trades += x.today.trades || 0;
+      if (x.position && x.position.status === "OPEN") open += 1;
+    });
+    $("autoAcct").innerHTML = [
+      ["Capital per strategy", cr(a.capital_per_strategy)],
+      ["Today's booked P&L", `<span class="${todayPnl >= 0 ? "up" : "down"}">${cr(todayPnl)}</span>`],
+      ["Open P&L", `<span class="${openPnl >= 0 ? "up" : "down"}">${cr(openPnl)}</span>`],
+      ["Trades today", trades], ["Open positions", open],
+    ].map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join("");
+
+    $("board").innerHTML = (a.strategies || []).map((x) => {
+      const act = x.action || "—";
+      const cls = act === "BUY CE" ? "ce" : act === "BUY PE" ? "pe" : "none";
+      const p = x.position, t = x.today;
+      const pos = !p ? `<div class="st">No position</div>` : p.status === "OPEN"
+        ? `<div class="posn">Open: <b>${esc(p.symbol)}</b><br>${int(p.lots)} lots @ ₹${inr(p.entry_price)} → ₹${inr(p.last_price)}
+            · <b class="${(p.unrealised_pnl || 0) >= 0 ? "up" : "down"}">${cr(p.unrealised_pnl)}</b><br>
+            Nifty SL ${inr(p.sl_index, 0)} · target ${inr(p.target_index, 0)}</div>`
+        : `<div class="posn">Pending order: ${esc(p.symbol)}</div>`;
+      return `<div class="tile"><h3>${esc(x.name)}</h3>
+        <span class="badge ${cls}">${esc(act === "NO TRADE" ? "NO TRADE" : act)}</span>
+        <div class="st">${esc(x.status || "")}</div>${pos}
+        <div class="today"><span>Today: <b>${t.trades}</b> trade${t.trades === 1 ? "" : "s"}</span>
+          <span>Won <b>${t.wins}/${t.closed}</b></span>
+          <span>P&L <b class="${t.net_pnl >= 0 ? "up" : "down"}">${cr(t.net_pnl)}</b></span></div></div>`;
+    }).join("");
+    const st = a.settings || {};
+    $("autoRules").textContent = `Checks every ${st.cycle_seconds}s · new entries ${st.entry_window} · square-off ${st.square_off} · ` +
+      `risk ${st.risk_per_trade_pct}% and max ${st.max_capital_per_trade_pct}% of capital per trade · size ≤ ${st.max_oi_pct}% of option OI · ` +
+      `max ${st.max_trades_per_strategy} trades per strategy · ${st.cooldown_minutes} min pause after an exit · ` +
+      `exit at ${st.exit_at} · ${st.moneyness} strike · ${st.slippage_pct}% slippage per fill.`;
+  }
+
+  async function toggleAuto() {
+    try {
+      const d = await postJSON(autoEnabled ? "/api/auto/stop" : "/api/auto/start");
+      renderAuto(d); pollLog();
+    } catch (e) { banner("err", esc(e.message)); }
+  }
+
+  let lastLogId = 0, logFilter = "all", logRows = [];
+  const FILTERS = {
+    all: () => true,
+    trades: (e) => ["entry", "order", "win", "loss"].includes(e.level),
+    signal: (e) => e.level === "signal",
+    problems: (e) => ["warn", "error"].includes(e.level),
+    summary: (e) => e.level === "summary",
+  };
+
+  async function pollLog(initial) {
+    try {
+      const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+      const q = initial ? `after=0&limit=400&day=${today}` : `after=${lastLogId}&limit=200`;
+      const r = await fetch("/api/auto/log?" + q, { headers: headers() });
+      if (!r.ok) return;
+      const ev = (await r.json()).events || [];
+      if (!ev.length) return;
+      lastLogId = Math.max(lastLogId, ...ev.map((e) => e.id));
+      ev.forEach((e) => { e._new = !initial; });
+      logRows = ev.concat(logRows).slice(0, 600);
+      renderLog();
+      if (!initial && ev.some((e) => ["entry", "win", "loss"].includes(e.level))) loadPaper();
+    } catch {}
+  }
+
+  function renderLog() {
+    const rows = logRows.filter(FILTERS[logFilter]);
+    $("logCount").textContent = `${logRows.length} events today`;
+    $("log").innerHTML = rows.length ? rows.map((e) => `
+      <div class="row ${esc(e.level)} ${e._new ? "new" : ""}"><span class="tm">${esc(e.ts.slice(11, 19))}</span>
+        <span class="who">${esc(e.strategy ? (NAMES[e.strategy] || e.strategy) : "System")}</span>
+        <span class="msg">${esc(e.message)}</span></div>`).join("")
+      : `<div class="empty" style="padding:10px">No events for this filter yet.</div>`;
+    logRows.forEach((e) => { e._new = false; });
+  }
+
+
+  // ------------------------------------------------------------------ Nifty 50 board
+  let board = null, sortKey = "base_weight", sortDir = -1, sideFilter = "all", obSymbol = null, optData = null, optTab = "most_active";
+  const pct = (v) => v == null ? "—" : `${v > 0 ? "+" : ""}${inr(v)}%`;
+  const cls = (v) => v > 0 ? "up" : v < 0 ? "down" : "";
+  const sideCls = (sc) => sc >= 2 ? "p" + sc : sc === 1 ? "p1" : sc === -1 ? "n1" : sc <= -2 ? "n" + (-sc) : "z";
+  const big = (v) => v == null ? "—" : v >= 1e7 ? `${inr(v / 1e7, 2)} Cr` : v >= 1e5 ? `${inr(v / 1e5, 2)} L` : int(v);
+
+  async function loadBoard() {
+    try {
+      const r = await fetch("/api/market/nifty50", { headers: headers() });
+      if (!r.ok) return;
+      board = await r.json();
+      renderBoard();
+    } catch {}
+  }
+
+  function moverList(id, rows, key) {
+    $(id).innerHTML = rows.length ? rows.map((x) => `<div class="it" data-sym="${esc(x.symbol)}">
+      <span>${esc(x.ticker)}</span><span class="${cls(x[key])}">${key === "index_points"
+        ? (x[key] > 0 ? "+" : "") + inr(x[key], 1) : pct(x[key])}</span></div>`).join("")
+      : `<div class="empty">—</div>`;
+  }
+
+  function renderBoard() {
+    const b = board; if (!b) return;
+    const f = b.feed || {};
+    $("feedState").className = "feed " + (f.mode || "off");
+    $("feedState").textContent = f.mode === "websocket" ? "LIVE · WebSocket" : f.mode === "rest" ? "Polling every 10 s"
+      : "OFF";
+    $("feedMsg").textContent = !b.logged_in ? "Log in to Fyers to start live data."
+      : f.last_update_age_s != null ? `Last update ${inr(f.last_update_age_s, 1)} s ago · ${f.with_data}/${f.symbols} symbols`
+      + (f.websocket_error ? ` · socket: ${f.websocket_error}` : "") : "Waiting for data…";
+    const br = b.breadth || {}, n = b.nifty || {}, tot = (br.advances || 0) + (br.declines || 0) || 1;
+    $("mktStrip").innerHTML = `
+      <div>Nifty 50<b class="${cls(n.change)}">${inr(n.ltp)}</b><span class="${cls(n.change)}">${n.change != null ? (n.change > 0 ? "+" : "") + inr(n.change) : ""} ${pct(n.change_pct)}</span></div>
+      <div>Advances / Declines<b><span class="up">${br.advances ?? "—"}</span> / <span class="down">${br.declines ?? "—"}</span></b>
+        <div class="adbar"><span class="a" style="width:${(br.advances || 0) / tot * 100}%"></span><span class="d" style="width:${(br.declines || 0) / tot * 100}%"></span></div></div>
+      <div>Buy side / Sell side<b><span class="up">${br.buy_side ?? "—"}</span> / <span class="down">${br.sell_side ?? "—"}</span></b>
+        <span>${br.weighted_buy_pct != null ? inr(br.weighted_buy_pct, 0) + "% of index weight on buy side" : ""}</span></div>
+      <div>Points from 50 stocks<b class="${cls(b.points_explained)}">${b.points_explained != null ? (b.points_explained > 0 ? "+" : "") + inr(b.points_explained, 1) : "—"}</b><span>vs Nifty ${n.change != null ? inr(n.change, 1) : "—"}</span></div>
+      <div>India VIX<b>${inr((b.india_vix || {}).ltp)}</b><span class="${cls(-((b.india_vix || {}).change_pct || 0))}">${pct((b.india_vix || {}).change_pct)}</span></div>`;
+    moverList("mvG", b.gainers || [], "change_pct");
+    moverList("mvL", b.losers || [], "change_pct");
+    moverList("mvU", b.top_contributors || [], "index_points");
+    moverList("mvD", b.top_draggers || [], "index_points");
+    document.querySelectorAll(".movers .it").forEach((e) => e.onclick = () => openDepth(e.dataset.sym));
+
+    const q = $("stockSearch").value.trim().toLowerCase();
+    let rows = (b.stocks || []).filter((r) => !q || (r.name + " " + r.ticker + " " + r.sector).toLowerCase().includes(q));
+    if (sideFilter === "buy") rows = rows.filter((r) => r.side_score > 0);
+    if (sideFilter === "sell") rows = rows.filter((r) => r.side_score < 0);
+    rows.sort((x, y) => {
+      const a = x[sortKey], c = y[sortKey];
+      if (a == null) return 1; if (c == null) return -1;
+      return (typeof a === "string" ? a.localeCompare(c) : a - c) * sortDir;
+    });
+    const cols = [["name", "Stock"], ["ltp", "LTP", 1], ["change_pct", "Chg %", 1],
+      ["live_weight", "Weight %", 1], ["index_points", "Nifty pts", 1], ["vwap", "VWAP", 1], ["volume", "Volume", 1],
+      ["turnover", "Value ₹", 1], ["buy_pct", "Buy vs sell orders"], ["side_score", "Side"]];
+    const arrow = (k) => k === sortKey ? (sortDir > 0 ? " ▲" : " ▼") : "";
+    $("stockTable").innerHTML = `<table><thead><tr>${cols.map(([k, t, num]) =>
+      `<th class="sort ${num ? "num" : ""}" data-k="${k}">${t}${arrow(k)}</th>`).join("")}</tr></thead><tbody>
+      ${rows.map((r) => `<tr class="click" data-sym="${esc(r.symbol)}" title="${esc(r.name + " · " + r.sector + (r.side_reasons.length ? " · " + r.side_reasons.join(", ") : ""))}">
+        <td><b>${esc(r.ticker)}</b> <span style="color:var(--muted);font-size:12px">${esc(r.sector)}</span></td>
+        <td class="num">${inr(r.ltp)}</td>
+        <td class="num ${cls(r.change_pct)}"><b>${pct(r.change_pct)}</b></td>
+        <td class="num">${inr(r.live_weight, 2)}</td>
+        <td class="num ${cls(r.index_points)}">${r.index_points != null ? (r.index_points > 0 ? "+" : "") + inr(r.index_points, 1) : "—"}</td>
+        <td class="num ${r.ltp && r.vwap ? cls(r.ltp - r.vwap) : ""}">${inr(r.vwap)}</td>
+        <td class="num">${big(r.volume)}</td>
+        <td class="num">${big(r.turnover)}</td>
+        <td>${r.buy_pct != null ? `<div style="display:flex;gap:6px;align-items:center"><div class="bsbar"><span class="b" style="width:${r.buy_pct}%"></span><span class="s" style="width:${100 - r.buy_pct}%"></span></div><span style="font-size:12px">${inr(r.buy_pct, 0)}% buy</span></div>` : `<span style="color:var(--muted);font-size:12px">needs live feed</span>`}</td>
+        <td><span class="side ${sideCls(r.side_score)}">${esc(r.side)}</span></td></tr>`).join("")}
+      </tbody></table>`;
+    document.querySelectorAll("#stockTable th.sort").forEach((th) => th.onclick = () => {
+      const k = th.dataset.k; if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = ["name", "sector"].includes(k) ? 1 : -1; }
+      renderBoard();
+    });
+    document.querySelectorAll("#stockTable tr.click").forEach((tr) => tr.onclick = () => openDepth(tr.dataset.sym));
+    $("mktNote").textContent = `Weights as of ${b.weights_as_of} (adjusted live for today's moves). Nifty pts = how many index points each stock added today. ` + (b.note || "");
+  }
+
+  // ------------------------------------------------------------------ order book
+  function openDepth(sym) {
+    obSymbol = sym; loadDepth();
+    if (window.innerWidth < 900) $("obCard").scrollIntoView({ behavior: "smooth" });
+  }
+  async function loadDepth() {
+    if (!obSymbol) return;
+    try {
+      const r = await fetch("/api/market/depth?symbol=" + encodeURIComponent(obSymbol), { headers: headers() });
+      const d = await r.json();
+      if (!r.ok || !d.success) { $("ob").innerHTML = `<div class="empty">${esc(d.error || "No data")}</div>`; return; }
+      $("obTitle").textContent = "— " + (d.name ? `${d.name} (${obSymbol})` : obSymbol);
+      const mx = Math.max(1, ...d.bids.map((x) => x.qty || 0), ...d.asks.map((x) => x.qty || 0));
+      const side = (rows, k) => rows.map((x) => `<tr><td class="num">${int(x.orders)}</td>
+        <td class="num qty"><span class="bar" style="width:${(x.qty || 0) / mx * 100}%"></span>${int(x.qty)}</td>
+        <td class="num"><b>${inr(x.price)}</b></td></tr>`).join("");
+      const askRows = d.asks.map((x) => `<tr><td class="num"><b>${inr(x.price)}</b></td>
+        <td class="num qty"><span class="bar" style="width:${(x.qty || 0) / mx * 100}%"></span>${int(x.qty)}</td>
+        <td class="num">${int(x.orders)}</td></tr>`).join("");
+      $("ob").className = "";
+      $("ob").innerHTML = `
+        <div class="strip">
+          <div>LTP<b class="${cls(d.change)}">${inr(d.ltp)}</b><span class="${cls(d.change)}">${pct(d.change_pct)}</span></div>
+          <div>Total buy qty<b class="up">${big(d.total_buy_qty)}</b></div>
+          <div>Total sell qty<b class="down">${big(d.total_sell_qty)}</b></div>
+          <div>Buyers vs sellers<b>${d.buy_pct != null ? inr(d.buy_pct, 0) + "% buy" : "—"}</b>
+            ${d.buy_pct != null ? `<div class="bsbar" style="width:100%"><span class="b" style="width:${d.buy_pct}%"></span><span class="s" style="width:${100 - d.buy_pct}%"></span></div>` : ""}</div>
+        </div>
+        <div class="ob">
+          <div class="bid"><table><thead><tr><th class="num">Orders</th><th class="num">Buy qty</th><th class="num">Bid</th></tr></thead><tbody>${side(d.bids)}</tbody></table></div>
+          <div class="ask"><table><thead><tr><th class="num">Ask</th><th class="num">Sell qty</th><th class="num">Orders</th></tr></thead><tbody>${askRows}</tbody></table></div>
+        </div>
+        <div class="facts">
+          <span>Spread <b>${inr(d.spread)}</b></span><span>VWAP <b>${inr(d.vwap)}</b></span><span>Volume <b>${big(d.volume)}</b></span>
+          <span>Day range <b>${inr(d.low)} – ${inr(d.high)}</b></span><span>Circuit <b>${inr(d.lower_circuit)} – ${inr(d.upper_circuit)}</b></span>
+          ${d.oi ? `<span>OI <b>${big(d.oi)}</b></span>` : ""}
+        </div>
+        <div class="papernote">Top 5 price levels from Fyers, refreshed every 3 s. Pending orders can be changed or cancelled at any time.</div>`;
+    } catch {}
+  }
+
+  // ------------------------------------------------------------------ most active options
+  async function loadOptions() {
+    try {
+      const qs = $("expiry").value ? "?expiry=" + $("expiry").value : "";
+      const r = await fetch("/api/market/options-activity" + qs, { headers: headers() });
+      if (!r.ok) return;
+      optData = await r.json(); renderOptions();
+    } catch {}
+  }
+  function renderOptions() {
+    const a = optData; if (!a) return;
+    $("optStrip").innerHTML = `<div>Call volume<b>${big(a.call_volume)}</b></div><div>Put volume<b>${big(a.put_volume)}</b></div>
+      <div>Volume PCR<b>${inr(a.volume_pcr)}</b></div><div>Expiry<b style="font-size:14px">${esc((a.expiry || {}).date || "—")}</b></div>`;
+    const rows = a[optTab] || [];
+    $("optTable").innerHTML = !rows.length ? `<div class="empty">No option data yet.</div>` : `<table><thead><tr>
+      <th>Option</th><th class="num">LTP</th><th class="num">Chg</th><th class="num">Volume</th><th class="num">OI</th>
+      <th class="num">OI chg</th><th>Buildup</th><th>Trade at</th><th class="num">IV</th></tr></thead><tbody>
+      ${rows.map((o) => `<tr class="click" data-sym="${esc(o.symbol)}"><td><b>${int(o.strike)} ${o.type}</b>
+          <span style="color:var(--muted);font-size:12px">${esc(o.moneyness || "")}</span></td>
+        <td class="num">${inr(o.ltp)}</td><td class="num ${cls(o.change)}">${o.change != null ? (o.change > 0 ? "+" : "") + inr(o.change) : "—"}</td>
+        <td class="num">${big(o.volume)}</td><td class="num">${big(o.oi)}</td>
+        <td class="num ${cls(o.oi_change)}">${o.oi_change != null ? (o.oi_change > 0 ? "+" : o.oi_change < 0 ? "-" : "") + big(Math.abs(o.oi_change)) : "—"}</td>
+        <td><span class="side ${o.side}">${esc(o.buildup)}</span></td><td style="font-size:12px">${esc(o.aggressor)}</td>
+        <td class="num">${o.iv != null ? inr(o.iv, 1) : "—"}</td></tr>`).join("")}</tbody></table>`;
+    document.querySelectorAll("#optTable tr.click").forEach((tr) => tr.onclick = () => openDepth(tr.dataset.sym));
+  }
+
+  function schedule() {
+    clearInterval(timer);
+    if ($("auto").checked) timer = setInterval(() => { if (!document.hidden) { load(); loadPaper(); } }, 30000);
+    store.set("niftyAuto", $("auto").checked ? "1" : "0");
+  }
+
+  // init
+  const p = new URLSearchParams(location.search);
+  if (p.get("login") === "success") banner("ok", "Logged in to Fyers for today.");
+  if (p.get("login") === "failed") banner("err", "Fyers login failed: " + esc(p.get("msg") || ""));
+  const savedM = store.get("niftyMoneyness"); if (savedM) $("moneyness").value = savedM;
+  if (store.get("niftyAuto") === "0") $("auto").checked = false;
+
+  $("refresh").onclick = () => { load(); loadPaper(); };
+  $("strategy").onchange = onStrategyChange;
+  $("placeBtn").onclick = placePaper;
+  $("lots").oninput = updateOrderForm;
+  $("resetBtn").onclick = resetPaper;
+  $("autoBtn").onclick = toggleAuto;
+  document.querySelectorAll("#logbar .chip").forEach((c) => c.onclick = () => {
+    document.querySelectorAll("#logbar .chip").forEach((x) => x.classList.toggle("on", x === c));
+    logFilter = c.dataset.f; renderLog();
+  });
+  setInterval(() => { if (!document.hidden) pollLog(); }, 3000);
+  setInterval(() => { if (!document.hidden) loadBoard(); }, 3000);
+  setInterval(() => { if (!document.hidden && obSymbol) loadDepth(); }, 3000);
+  setInterval(() => { if (!document.hidden) loadOptions(); }, 10000);
+  $("stockSearch").oninput = renderBoard;
+  document.querySelectorAll("#sideTabs .chip").forEach((c) => c.onclick = () => {
+    document.querySelectorAll("#sideTabs .chip").forEach((x) => x.classList.toggle("on", x === c));
+    sideFilter = c.dataset.side; renderBoard();
+  });
+  document.querySelectorAll("#optTabs .chip").forEach((c) => c.onclick = () => {
+    document.querySelectorAll("#optTabs .chip").forEach((x) => x.classList.toggle("on", x === c));
+    optTab = c.dataset.t; renderOptions();
+  });
+  setInterval(() => { if (!document.hidden) loadAuto(); }, 5000);
+  setInterval(() => {   // quicker P&L updates while paper trades are open
+    if (!document.hidden && $("auto").checked && document.querySelector("[data-close]")) loadPaper();
+  }, 10000);
+  $("moneyness").onchange = () => { store.set("niftyMoneyness", $("moneyness").value); load(); };
+  $("expiry").onchange = load;
+  $("auto").onchange = schedule;
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && $("auto").checked) load(); });
+
+  const savedS = store.get("niftyStrategy");
+  if (savedS) { const o = document.createElement("option"); o.value = savedS; o.textContent = savedS; $("strategy").appendChild(o); $("strategy").value = savedS; }
+  loadStrategies().then(() => load()).then(() => { loadExpiries(); loadPaper(); });
+  loadAuto().then(() => pollLog(true));
+  loadBoard(); loadOptions();
+  schedule();
+})();
+</script>
+</body>
+</html>

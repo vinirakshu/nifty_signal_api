@@ -1,0 +1,6 @@
+.env
+fyers_token.json
+*.db
+logs/
+__pycache__/
+.pytest_cache/
